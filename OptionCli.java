@@ -16,7 +16,7 @@ import picocli.CommandLine.Help.Visibility;
 ██      ██  ██████  ██████   ██████ ███████ ██     ██████  ██ ██   ██ 
 */
 @Command(description = "Top-level command, it do nothing, don't worry", name = "toplevel")
-public class OrderedOption implements Callable<Void> {
+public class OptionCli implements Callable<Void> {
 
     @Option(
         names = {"-m", "--message"},
@@ -33,7 +33,7 @@ public class OrderedOption implements Callable<Void> {
     private String secondMessage;
 
     public static void main(String[] args) {
-        CommandLine cli = new CommandLine(new OrderedOption());
+        CommandLine cli = new CommandLine(new OptionCli());
         
         if (args.length == 0) {
             cli.usage(System.out);
@@ -50,10 +50,10 @@ public class OrderedOption implements Callable<Void> {
 
     @Command(description = "This subcommand use the same options from top-level...", name = "same")
     public void sameCommand() {
-        // jbang OrderedOption.java same
+        // jbang OptionCli.java same
         // print: Hello World
 
-        // jbang OrderedOption.java -m Hey -s Caio same
+        // jbang OptionCli.java -m Hey -s Caio same
         // print: Hey Caio
         System.out.println(this.message + " " + this.secondMessage);
     }
@@ -69,10 +69,28 @@ public class OrderedOption implements Callable<Void> {
         this.message = message == null ? this.message : message;
         this.secondMessage = secondMessage == null ? this.secondMessage : secondMessage;
 
-        // jbang OrderedOption.java -m Hoi same2 -m Hey
+        // jbang OptionCli.java -m Hoi same2 -m Hey
         // print: Hey World
-        // jbang OrderedOption.java -m Hoi -s Caio same2 -m Hey
+        // jbang OptionCli.java -m Hoi -s Caio same2 -m Hey
         // print: Hey Caio
         System.out.println(this.message + " " + this.secondMessage);
+    }
+
+    @Command(
+        description = "Same, but now with a option with same name, but diferetent meaning...",
+        name = "same3")
+    public void same3Command(
+        @Option(
+            names = {"-m", "--message"}) String message,
+        @Option(
+            names = {"-s", "--second-message"}) String secondMessage, 
+        @Option(
+            names = {"-ss", "--other-message"}) String otherMessage
+    ) {
+        // if you change --other-message to -s
+        // BOOM, THIS NOT WORK, OF COURSE!
+        System.out.println(message);
+        System.out.println(secondMessage);
+        System.out.println(otherMessage);
     }
 }
