@@ -3,6 +3,8 @@
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -18,24 +20,20 @@ public class ConverterOptionCli implements Callable<Void> {
     @Option(
         names = {"-t", "--targets"},
         converter = Targets.Converter.class,
-        paramLabel = "<cluster-name@<hostname>:<port>[,<hostname>:<port>]")
+        paramLabel = "<cluster-name>@<hostname>:<port>[,<hostname>:<port>]")
     private Targets targets;
 
     public static class Targets {
         private String clusterName;
         private List<String> addresses;
 
-        @Override
-        public String toString() {
-            return "[clusterName = " + clusterName + "; addresses = " + addresses + "]";
-        }
-
         public static class Converter implements ITypeConverter<Targets> {
             public Targets convert(String value) throws Exception {
+                Matcher matcher = Pattern.compile("(.*)@(.*)").matcher(value);
+                if (!matcher.matches()) throw new Exception("Ops!");
                 Targets targets = new Targets();
-                String[] values = value.split("@");
-                targets.clusterName = values[0];
-                targets.addresses = List.of(values[1].split(","));
+                targets.clusterName = matcher.group(1);
+                targets.addresses = List.of(matcher.group(2).split(","));
                 return targets;
             }
         }
